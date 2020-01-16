@@ -1,24 +1,19 @@
 const request = require('request');
 
-const catFetcher = function(address, breed, callback) {
-  request(address += breed, (error, response, body) => {
+const fetchBreedDescription = function(breed, callback) {
+  request('https://api.thecatapi.com/v1/breeds/search?q=' + breed, (error, response, body) => {
    
     if (error) {
-      console.log('error:', error);
+      callback(error,null);
     } else if (body === '[]') {
-      console.log('ERROR: Invalid resource/page');
+      error = 'Requested breed could not be found';
+      callback(error, null);
     } else {
-      callback(body);
+      let desc = JSON.parse(body)[0]['description'];
+      desc = desc.slice(0, -1);
+      callback(null, desc);
     }
   });
 };
 
-const printBreedInfo = function(body) {
-  const obj = JSON.parse(body);
-  console.log(obj[0]['description']);
-};
-
-let arg = process.argv;
-const breed = arg.slice(2)[0];
-
-catFetcher('https://api.thecatapi.com/v1/breeds/search?q=', breed, printBreedInfo);
+module.exports = { fetchBreedDescription };
